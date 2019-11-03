@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>QuickHEN 3.15-6.20</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    .loader {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      margin: -75px 0 0 -75px;
+
+      border: 10px solid #f3f3f3;
+      border-radius: 50%;
+      border-top: 10px solid #044595;
+      border-left: 10px solid #044595;
+      width: 120px;
+      height: 120px;
+
+      -webkit-animation: spin 1s linear infinite;
+    }
+
+    .info {
+      overflow: hidden;
+      position: fixed;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+
+      font-size: 45px;
+      font-family: sans-serif;
+
+      transform: translate(-50%, -50%);
+    }
+
+    .credits {
+      overflow: hidden;
+      position: fixed;
+      position: absolute;
+      top: 90%;
+      left: 50%;
+
+      font-size: 16px;
+      font-family: sans-serif;
+      text-align: center;
+
+      transform: translate(-50%, -90%);
+    }
+
+    @-webkit-keyframes spin {
+      0% { -webkit-transform: rotate(0deg); }
+      100% { -webkit-transform: rotate(360deg); }
+    }
+  </style>
+  <style>
+    html, a1,a2,a3,a4,a5,a6,a7,a8 em:nth-child(5) {
+      height: 500px
+    }
+  </style>
+</head>
+<body>
+	<pre id="console"></pre>
+	<script type="text/javascript">
+	window.print = function (x) {
+		document.getElementById("console").innerText += x + "\n";
+	};
+	window.print_html = function (string) { // like print but html
+		document.getElementById("console").innerHTML += string + "\n";
+	};
+
+    window.allset = function () {
+		document.getElementById("loader").style.display = "none";
+		document.getElementById("allset").style.display = "block";
+    };
+
+	window.awaitpl = function () {
+		document.getElementById("loader").style.display = "none";
+		document.getElementById("awaiting").style.display = "block";
+	};
+
+	window.fail = function (info) {
+		document.getElementById("loader").style.display = "none";
+		document.getElementById("fail").style.display = "block";
+	};
+
+  	window.postExpl = function () {
+		window.stage2();
+	};
+
+	function runWebKitExploit() {
+		if (ps4_fw <= 204)
+			exploit_CVE_2014_1303();
+		else if (ps4_fw >= 300 && ps4_fw <= 370)
+			exploit_firekaku();
+		else if (ps4_fw >= 315 && ps4_fw <= 407 && 1==0)
+			exploit_StackUnitializedRead();
+		else if (ps4_fw >= 450 && ps4_fw <= 501 && 1==0) // this webkit exploit is deprecated because less stable
+			exploit_setAttributeNodeNS();
+		else if (ps4_fw >= 450 && ps4_fw <= 556)
+			exploit_haveABadTime();
+		else if (ps4_fw >= 600 && ps4_fw <= 620)
+			exploit_shiftCountWithArrayStorage();
+	};
+
+    function postLoad() {
+		var fwFromUA = navigator.userAgent.substring(navigator.userAgent.indexOf("5.0 (") + 19, navigator.userAgent.indexOf(") Apple"));
+		var fw_major_string = fwFromUA.substring(fwFromUA.indexOf(""), fwFromUA.indexOf("."));
+		var fw_minor_string = fwFromUA.substring(fwFromUA.indexOf(".")+3, fwFromUA.indexOf(fw_major_string)+2);
+		var ps4_fw = parseInt(fw_major_string) * 100 + parseInt(fw_minor_string);
+		window.ps4_fw = ps4_fw;
+		//alert(ps4_fw);
+		
+		if (window.ps4_fw >= 315 && window.ps4_fw <= 407)
+			window.leakval_slide = 0x28;
+		else if (window.ps4_fw >= 450 && window.ps4_fw <= 620)
+			window.leakval_slide = 0x10;
+		
+		setTimeout(runWebKitExploit, 50);
+    };
+	
+	function showtime() {
+		document.getElementById("loader").style.display = "none";
+		document.getElementById("allset").style.display = "none";
+		document.getElementById("date").style.display = "block";
+	};
+	function settime() {
+		var year = document.getElementById("year").value;
+		var month = document.getElementById("month").value;
+		var day = document.getElementById("day").value;
+		var hours = document.getElementById("hour").value;
+		var minutes = document.getElementById("minute").value;
+		window.setRTC(year, month, day, hours, minutes, 0);
+	};
+	
+	function showPayloads() {
+		showtime();
+	}
+	
+  </script>
+
+  <div id="loader" class="loader"></div>
+
+<div id="date" class="info" style="display:none;">
+<tr>
+  <td>Year:<input type="number" id="year" name="year" min="1" max="3000" value="2019"></td>
+  <td>Month:<input type="number" id="month" name="month" min="1" max="12" value="04"></td>
+  <td>Day:<input type="number" id="day" name="day" min="1" max="31" value="30"></td>
+  <td>Hour:<input type="number" id="hour" name="hour" min="0" max="24" value="23"></td>
+  <td>Minute:<input type="number" id="minute" name="minute" min="0" max="60" value="41"></td>
+  <td><button onclick="settime();">Settime</button></td>
+</tr>
+</div>
+
+  <div id="awaiting" class="info" style="display:none;">
+    Awaiting Payload...
+  </div>
+
+  <div id="allset" class="info" style="display:none;">
+    You're all set!
+  </div>
+
+  <div id="fail" class="info" style="display:none;">
+    Something went wrong :(
+  </div>
+
+  <div id="badfw" class="info" style="display:none;">
+    Only firmwares 3.15-6.20 are supported!
+  </div>
+  
+  <div id="footer" class="credits">
+    <ul style="list-style: none;padding-left:0">
+      <li>Exploits from qwertyoruiopz and see credits</li>
+      <li>Implementation by Specter and CelesteBlue</li>
+      <li>HEN thanks to flatz, idc, WildCard, zecoxao, xvortex, hitodama, BigBoss, z80, Sistro, kozarovv, Zer0xFF, SocraticBliss</li>
+    </ul>
+  </div>
+  
+  <script src="./fonctionsAjax.js"></script>
+  <script src="./common_utils.js"></script>
+  <script src="./rop.js"></script>
+  <script src="./syscalls.js"></script>
+  <script src="./kernel_defines.js"></script>
+  <script src="./kernel_namedobj.js"></script>
+  <script src="./kernel_bpf_race_old.js"></script>
+  <script src="./kernel_bpf_race.js"></script>
+  <script src="./kernel_bpf_double_free.js"></script>
+  <script src="./userland.js"></script>
+  <script src="./exploit_CVE-2014-1303.js"></script>
+  <script src="./exploit_firekaku.js"></script>
+  <script src="./exploit_StackUnitializedRead.js"></script>
+  <script src="./exploit_setAttributeNodeNS.js"></script>
+  <script src="./exploit_haveABadTime.js"></script>
+  <script src="./exploit_shiftCountWithArrayStorage.js"></script>
+  <script src="./payload.js"></script>
+  <script src="./unblocker.js"></script>
+  <script src="./reactPSPlus.js"></script>
+  <script type="text/javascript">window.onload = setTimeout(postLoad, 50);</script>
+</body>
+</html>
